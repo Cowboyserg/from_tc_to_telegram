@@ -14,9 +14,9 @@ import ctypes
 
 
 def get_metrics():
-	user32 = ctypes.windll.user32
-	screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
-	return screensize
+    user32 = ctypes.windll.user32
+    screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+    return screensize
 
 METRICS = get_metrics()
 
@@ -114,7 +114,7 @@ def get_videos_names():
     return [i for i in os.listdir() if "mp4" in i]
 
 if __name__ == "__main__":
-	
+    used_names = []
     pyautogui.MINIMUM_DURATION = 2
     sl = 3
     time.sleep(sl+5)
@@ -134,9 +134,12 @@ if __name__ == "__main__":
         cb = get_cb()
         if "part" in cb and "mp4" in cb:
             print("Название", cb)
-            pass
+            if cb in used_names:
+                print("Название уже переносили", cb)
+                break
         else:
             break
+        used_names.append(cb)
         print("Выходим")
         pyautogui.press("esc")
         time.sleep(sl)
