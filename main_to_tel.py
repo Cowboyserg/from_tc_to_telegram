@@ -42,18 +42,21 @@ def get_Len1(filename):
 # ↓↓
 # ↓↓
 
+TEL_WHERE = "izb"
 def find_box_tel():
     image = ImageGrab.grab()
     obj = image.load()
     flag = False
     for i in range(METRICS[0]):
-        for j in range(METRICS[1]): # вниз
-            # if obj[i,j] == (239, 253, 222): # для избранного
-            #     pyautogui.moveTo(i,j)
-            #     return [i,j]
-            if obj[i,j] == (250, 167, 116): # для streams
-                pyautogui.moveTo(i,j)
-                return [i,j+100]
+        for j in range(METRICS[1]):# вниз
+            if TEL_WHERE == "izb":
+                if obj[i,j] == (239, 253, 222): # для избранного
+                    pyautogui.moveTo(i,j)
+                    return [i,j]
+            else:
+                if obj[i,j] == (250, 167, 116): # для streams
+                    pyautogui.moveTo(i,j)
+                    return [i,j+100]
 
 
 def find_box_tc():
@@ -150,13 +153,14 @@ if __name__ == "__main__":
         pyautogui.mouseDown(button='left')
         time.sleep(sl)
         print("Передвигаем в телегу")
-        pyautogui.moveTo(find_box_tel())
+        where_tel = find_box_tel()
+        pyautogui.moveTo(where_tel)
         time.sleep(1)
         print("Чуть двигаем мышь")
         pyautogui.moveRel(0, 10)
         time.sleep(1)
         print("Передвигаем в телегу")
-        pyautogui.moveTo(find_box_tel())
+        pyautogui.moveTo(where_tel)
         time.sleep(sl)
         pyautogui.mouseUp(button='left')
         time.sleep(sl)
