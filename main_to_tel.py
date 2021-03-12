@@ -11,6 +11,7 @@ import time
 import win32clipboard
 import numpy as np
 import ctypes
+from loguru import logger
 
 
 def get_metrics():
@@ -42,7 +43,7 @@ def get_Len1(filename):
 # ↓↓
 # ↓↓
 
-TEL_WHERE = "izb"
+TEL_WHERE = "not"
 def find_box_tel():
     image = ImageGrab.grab()
     obj = image.load()
@@ -117,9 +118,10 @@ def get_videos_names():
     return [i for i in os.listdir() if "mp4" in i]
 
 if __name__ == "__main__":
+    logger.add("log.log", format = "{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}", level="INFO")
     used_names = []
     pyautogui.MINIMUM_DURATION = 2
-    sl = 3
+    sl = 8
     time.sleep(sl+5)
     while True:
         blue_coor = find_blue_pixel_in_tc()
@@ -138,6 +140,7 @@ if __name__ == "__main__":
         if "part" in cb and "mp4" in cb:
             print("Название", cb)
             if cb in used_names:
+                logger.info(f"Название уже переносили: {cb}")
                 print("Название уже переносили", cb)
                 break
         else:
@@ -168,6 +171,7 @@ if __name__ == "__main__":
         pyautogui.hotkey('ctrlleft', 'v')
         time.sleep(sl)
         print("Нажимаем ентер")
+        logger.info(f"Вставили: {cb}")
         pyautogui.press('enter')
         time.sleep(sl)
         print("Альтабаемся")

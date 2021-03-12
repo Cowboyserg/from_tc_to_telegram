@@ -9,6 +9,8 @@ from PIL import Image, ImageGrab
 import pyautogui
 import time
 import win32clipboard
+import os
+
 
 def get_cb():
     win32clipboard.OpenClipboard()
@@ -18,6 +20,7 @@ def get_cb():
 
 def get_Len1(filename):
     cap = cv2.VideoCapture(filename)
+    print(filename)
     fps = cap.get(cv2.CAP_PROP_FPS)      # OpenCV2 version 2 used "CV_CAP_PROP_FPS"
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     duration = frame_count/fps
@@ -45,15 +48,25 @@ def getLength(filename):
 
 
 def get_videos_names():
-    return [i for i in os.listdir() if "mp4" in i]
+    path_to_dir = os.path.dirname(os.path.realpath(__file__))
+    path_to_pre_dir = os.path.dirname(path_to_dir)
+    mas_files = os.listdir(path_to_dir)
+    mas_pre_files = os.listdir(path_to_pre_dir)
+    if ".mp4" in "".join(mas_files):
+        return [[i for i in mas_files if "mp4" in i], path_to_dir]
+    elif ".mp4" in "".join(mas_pre_files):
+        return [[i for i in mas_pre_files if "mp4" in i], path_to_pre_dir]
 
 if __name__ == "__main__":
     videos = get_videos_names()
+    path_ = videos[1]
+    print(videos)
     len_of_parts = 44
-    for i in videos:
+    for i in videos[0]:
         if "part" not in i and "mp4" in i:
             # duration = mp.VideoFileClip(i).duration
-            duration = get_Len1(i)
+            f = path_+"\\"+i
+            duration = get_Len1(f)
             duration_t = datetime.timedelta(seconds=int(duration))
             count_of_parts = math.ceil(duration/(60*len_of_parts))
             print("Количество частей", count_of_parts)
@@ -63,9 +76,9 @@ if __name__ == "__main__":
                 old_name = i
                 if j == count_of_parts-1:
                     print("Последняя часть")
-                    command = f'ffmpeg.exe -i "{i}" -vcodec copy -acodec copy -ss {str(datetime.timedelta(minutes=len_of_parts*(j)))} -t {duration_t-datetime.timedelta(minutes=len_of_parts*(j))} -async 1 "{i.replace(".mp4","")}__part{j+1}__{str(start).replace(":","_")}__{str(duration_t).replace(":","_")}.mp4"'
+                    command = f'ffmpeg.exe -i "{f}" -vcodec copy -acodec copy -ss {str(datetime.timedelta(minutes=len_of_parts*(j)))} -t {duration_t-datetime.timedelta(minutes=len_of_parts*(j))} -async 1 "{path_}\\{i.replace(".mp4","")}__part{j+1}__{str(start).replace(":","_")}__{str(duration_t).replace(":","_")}.mp4"'
                 else:
-                    command = f'ffmpeg.exe -i "{i}" -vcodec copy -acodec copy -ss {start} -t {delta} -async 1 "{i.replace(".mp4","")}__part{j+1}__{str(start).replace(":","_")}__{str(start+delta).replace(":","_")}.mp4"'
+                    command = f'ffmpeg.exe -i "{f}" -vcodec copy -acodec copy -ss {start} -t {delta} -async 1 "{path_}\\{i.replace(".mp4","")}__part{j+1}__{str(start).replace(":","_")}__{str(start+delta).replace(":","_")}.mp4"'
                 print(command)
                 subprocess.check_call(command)
                 start += delta
