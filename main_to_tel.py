@@ -19,7 +19,9 @@ def get_metrics():
     screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
     return screensize
 
+
 METRICS = get_metrics()
+
 
 def get_cb():
     win32clipboard.OpenClipboard()
@@ -30,13 +32,14 @@ def get_cb():
 
 def get_Len1(filename):
     cap = cv2.VideoCapture(filename)
-    fps = cap.get(cv2.CAP_PROP_FPS)      # OpenCV2 version 2 used "CV_CAP_PROP_FPS"
+    fps = cap.get(cv2.CAP_PROP_FPS)  # OpenCV2 version 2 used "CV_CAP_PROP_FPS"
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    duration = frame_count/fps
-    minutes = int(duration/60)
-    seconds = duration%60
+    duration = frame_count / fps
+    minutes = int(duration / 60)
+    seconds = duration % 60
     cap.release()
     return duration
+
 
 # ↓↓ alt25
 # ↓↓
@@ -44,20 +47,33 @@ def get_Len1(filename):
 # ↓↓
 
 TEL_WHERE = "not"
+
+
 def find_box_tel():
     image = ImageGrab.grab()
     obj = image.load()
     flag = False
     for i in range(METRICS[0]):
-        for j in range(METRICS[1]):# вниз
+        for j in range(METRICS[1]):  # вниз
             if TEL_WHERE == "izb":
-                if obj[i,j] == (239, 253, 222): # для избранного
-                    pyautogui.moveTo(i,j)
-                    return [i,j]
+                if obj[i, j] == (239, 253, 222):  # для избранного
+                    pyautogui.moveTo(i, j)
+                    return [i, j]
             else:
-                if obj[i,j] == (250, 167, 116): # для streams
-                    pyautogui.moveTo(i,j)
-                    return [i,j+100]
+                if obj[i, j] == (250, 167, 116):  # для streams
+                    pyautogui.moveTo(i, j)
+                    return [i, j + 100]
+
+
+def find_box_tc1():
+    image = ImageGrab.grab()
+    obj = image.load()
+    for i in range(METRICS[0]):
+        for j in range(METRICS[1]):  # вниз
+            if obj[i, j] == (204, 232, 255):  # начало голубой полоски, где имя
+                x1 = i
+                y1 = j
+                return x1, y1
 
 
 def find_box_tc():
@@ -66,63 +82,79 @@ def find_box_tc():
     flag = False
     # pix = np.array(obj)
     for i in range(METRICS[0]):
-        for j in range(METRICS[1]): # вниз
-            if obj[i,j] == (188, 220, 244): # начало голубой полоски, где имя
+        for j in range(METRICS[1]):  # вниз
+            if obj[i, j] == (188, 220, 244):  # начало голубой полоски, где имя
                 x = i
                 y = j
                 for k in range(y, 768):
-                    if obj[i,k] != (188, 220, 244): # верхний левый угол снизу от г.п.
+                    if obj[i, k] != (188, 220, 244):  # верхний левый угол снизу от г.п.
                         i1 = i
                         j1 = k
                         # pyautogui.moveTo([i1,j1])
                         # time.sleep(1)
                         break
                 for k in range(x, 1366):
-                    if obj[k,j] != (188, 220, 244): # справа конец голубой полоски
+                    if obj[k, j] != (188, 220, 244):  # справа конец голубой полоски
                         i2 = k
-                        j2 = j+(j1-j)
+                        j2 = j + (j1 - j)
                         # pyautogui.moveTo([i2,j2])
                         # time.sleep(1)
                         break
                 for k in range(j2, 768):
-                    if obj[i2,k] == (240, 240, 240): # правая нижняя граница, первое серое по горизонтали
+                    if obj[i2, k] == (240, 240, 240):  # правая нижняя граница, первое серое по горизонтали
                         i3 = i2
-                        j3 = k 
+                        j3 = k
                         # pyautogui.moveTo([i3,j3])
                         # time.sleep(1)
                         flag = True
                         break
         if flag:
             break
-    return [[i1,j1],[i2,j2],[i3,j3]]
+    return [[i1, j1], [i2, j2], [i3, j3]]
+
+
+def move_to_pixel(box: list):
+    print(box)
+    pyautogui.moveTo(box[0])
+    print(1)
+    time.sleep(2)
+    pyautogui.moveTo(box[1])
+    print(2)
+    time.sleep(2)
+    pyautogui.moveTo(box[2])
+
 
 def find_blue_pixel_in_tc():
     image = ImageGrab.grab()
     obj = image.load()
     box = find_box_tc()
+    print(box)
     for i in range(box[0][0], box[1][0]):
         for j in range(box[0][1], box[2][1]):
-            if obj[i,j] == (204, 232, 255):
-                coor_i = i+3
-                coor_j = j+3
-                return [coor_i,coor_j]
+            if obj[i, j] == (204, 232, 255):
+                coor_i = i + 3
+                coor_j = j + 3
+                return coor_i, coor_j
                 # print(coor_i, coor_j)
                 # pyautogui.moveTo([coor_i,coor_j])
 
+
 def getLength(filename):
-  result = subprocess.Popen([r"d:\projects\programms_for_every_day\twitch3_find_download\ffprobe.exe", filename],stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
-  return [re.findall(r"ation:\s([.]+),",str(x))[0] for x in result.stdout.readlines() if b'Duration' in x]
+    result = subprocess.Popen([r"d:\projects\programms_for_every_day\twitch3_find_download\ffprobe.exe", filename],
+                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return [re.findall(r"ation:\s([.]+),", str(x))[0] for x in result.stdout.readlines() if b'Duration' in x]
 
 
 def get_videos_names():
     return [i for i in os.listdir() if "mp4" in i]
 
+
 if __name__ == "__main__":
-    logger.add("log.log", format = "{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}", level="INFO")
+    logger.add("log.log", format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}", level="INFO")
     used_names = []
     pyautogui.MINIMUM_DURATION = 2
-    sl = 8
-    time.sleep(sl+5)
+    sl = 2
+    time.sleep(sl + 3)
     while True:
         blue_coor = find_blue_pixel_in_tc()
         print(blue_coor)
@@ -137,7 +169,7 @@ if __name__ == "__main__":
         pyautogui.hotkey('ctrlleft', 'c')
         time.sleep(sl)
         cb = get_cb()
-        if "part" in cb and "mp4" in cb:
+        if "mp4" in cb:
             print("Название", cb)
             if cb in used_names:
                 logger.info(f"Название уже переносили: {cb}")
@@ -178,7 +210,7 @@ if __name__ == "__main__":
         pyautogui.hotkey('alt', 'tab')
         time.sleep(sl)
         print("Снимаем выделение со старого файла")
-        pyautogui.click(blue_coor,button='right')
+        pyautogui.click(blue_coor, button='right')
         time.sleep(sl)
         print("Стрелка вниз")
         pyautogui.press('down')
